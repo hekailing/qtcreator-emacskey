@@ -83,9 +83,6 @@ void EmacsKeysState::clearKillBuf() {
 
 void EmacsKeysState::setLastAction(EmacsKeysAction action)
 {
-    if (isKillAction(action) && !isKillAction(m_lastAction)) {
-        clearKillBuf();
-    }
     if (m_mark != -1) {
         // this code can be triggered only by 3rd party actions
         beginOwnAction();

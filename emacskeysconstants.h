@@ -29,6 +29,7 @@ namespace Constants {
 
 const char DELETE_CHARACTER[]         = "EmacsKeys.DeleteCharacter";
 const char KILL_WORD[]                = "EmacsKeys.KillWord";
+const char KILL_PREV_WORD[]           = "EmacsKeys.KillPrevWord";
 const char KILL_LINE[]                = "EmacsKeys.KillLine";
 const char INSERT_LINE_AND_INDENT[]   = "EmacsKeys.InsertLineAndIndent";
 

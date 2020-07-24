@@ -80,6 +80,8 @@ bool EmacsKeysPlugin::initialize(const QStringList &arguments, QString *errorStr
         &EmacsKeysPlugin::deleteCharacter, tr("Delete Character"));
     registerAction(Constants::KILL_WORD,
         &EmacsKeysPlugin::killWord, tr("Kill Word"));
+    registerAction(Constants::KILL_PREV_WORD,
+        &EmacsKeysPlugin::killPrevWord, tr("Kill Prev Word"));
     registerAction(Constants::KILL_LINE,
         &EmacsKeysPlugin::killLine, tr("Kill Line"));
     registerAction(Constants::INSERT_LINE_AND_INDENT,
@@ -266,6 +268,9 @@ void EmacsKeysPlugin::killWord()
     m_currentState->beginOwnAction();
     QTextCursor cursor = m_currentEditorWidget->textCursor();
     cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
+    if (!m_currentState->isKillAction()) {
+        m_currentState->clearKillBuf();
+    }
     m_currentState->updateKillBuf(cursor.selectedText());
     cursor.removeSelectedText();
     m_currentState->endOwnAction(KeysActionKillWord);
@@ -277,7 +282,10 @@ void EmacsKeysPlugin::killPrevWord()
         return;
     m_currentState->beginOwnAction();
     QTextCursor cursor = m_currentEditorWidget->textCursor();
-    cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
+    cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
+    if (!m_currentState->isKillAction()) {
+        m_currentState->clearKillBuf();
+    }
     m_currentState->updateKillBuf(cursor.selectedText(), EmacsKeysPushFront);
     cursor.removeSelectedText();
     m_currentState->endOwnAction(KeysActionKillWord);
@@ -295,6 +303,9 @@ void EmacsKeysPlugin::killLine()
     if (cursor.position() == position) {
         // empty line
         cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+    }
+    if (!m_currentState->isKillAction()) {
+        m_currentState->clearKillBuf();
     }
     m_currentState->updateKillBuf(cursor.selectedText());
     cursor.removeSelectedText();

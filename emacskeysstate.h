@@ -64,14 +64,14 @@ namespace Internal {
         void setMark(int mark) { m_mark = mark; }
         void updateKillBuf(const QString &killText, EmacsKeysKillBufPush pushPos = EmacsKeysPushBack);
         const QString& getKillBuf() { return m_killBuf; }
+        bool isKillAction();
+        void clearKillBuf();
 
     private:
         void cursorPositionChanged();
         void textChanged();
         void selectionChanged();
         bool isKillAction(EmacsKeysAction action);
-        bool isKillAction();
-        void clearKillBuf();
 
         bool m_ignore3rdParty;
         int m_mark;
