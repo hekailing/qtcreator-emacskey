@@ -64,6 +64,7 @@ private:
 
     void deleteCharacter();       // C-d
     void killWord();              // M-d
+    void killPrevWord();          // M-DEL
     void killLine();              // C-k
     void insertLineAndIndent();   // C-j
 

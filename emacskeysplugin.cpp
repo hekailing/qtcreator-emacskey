@@ -242,7 +242,7 @@ void EmacsKeysPlugin::yank()
         return;
 
     m_currentState->beginOwnAction();
-    m_currentEditorWidget->paste();
+    m_currentEditorWidget->insertPlainText(m_currentState->getKillBuf());
     m_currentState->setMark(-1);
     m_currentState->endOwnAction(KeysActionOther);
 }
@@ -266,12 +266,19 @@ void EmacsKeysPlugin::killWord()
     m_currentState->beginOwnAction();
     QTextCursor cursor = m_currentEditorWidget->textCursor();
     cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
-    if (m_currentState->lastAction() == KeysActionKillWord) {
-        QApplication::clipboard()->setText(
-            QApplication::clipboard()->text() + cursor.selectedText());
-    } else {
-        QApplication::clipboard()->setText(cursor.selectedText());
-    }
+    m_currentState->updateKillBuf(cursor.selectedText());
+    cursor.removeSelectedText();
+    m_currentState->endOwnAction(KeysActionKillWord);
+}
+
+void EmacsKeysPlugin::killPrevWord()
+{
+    if (!m_currentEditorWidget)
+        return;
+    m_currentState->beginOwnAction();
+    QTextCursor cursor = m_currentEditorWidget->textCursor();
+    cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
+    m_currentState->updateKillBuf(cursor.selectedText(), EmacsKeysPushFront);
     cursor.removeSelectedText();
     m_currentState->endOwnAction(KeysActionKillWord);
 }
@@ -289,12 +296,7 @@ void EmacsKeysPlugin::killLine()
         // empty line
         cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
     }
-    if (m_currentState->lastAction() == KeysActionKillLine) {
-        QApplication::clipboard()->setText(
-            QApplication::clipboard()->text() + cursor.selectedText());
-    } else {
-        QApplication::clipboard()->setText(cursor.selectedText());
-    }
+    m_currentState->updateKillBuf(cursor.selectedText());
     cursor.removeSelectedText();
     m_currentState->endOwnAction(KeysActionKillLine);
 }

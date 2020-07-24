@@ -50,8 +50,42 @@ EmacsKeysState::EmacsKeysState(QPlainTextEdit *edit):
 
 EmacsKeysState::~EmacsKeysState() = default;
 
+
+bool EmacsKeysState::isKillAction(EmacsKeysAction action) {
+    if (action == KeysActionKillWord \
+            || action == KeysActionKillPrevWord \
+            || action == KeysActionKillLine) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+bool EmacsKeysState::isKillAction() {
+    return isKillAction(m_lastAction);
+}
+
+
+void EmacsKeysState::updateKillBuf(const QString &killText, EmacsKeysKillBufPush pushPos) {
+    if (pushPos == EmacsKeysPushBack) {
+        m_killBuf.push_back(killText);
+    } else {
+        m_killBuf.push_front(killText);
+    }
+}
+
+
+void EmacsKeysState::clearKillBuf() {
+    m_killBuf.clear();
+}
+
+
 void EmacsKeysState::setLastAction(EmacsKeysAction action)
 {
+    if (isKillAction(action) && !isKillAction(m_lastAction)) {
+        clearKillBuf();
+    }
     if (m_mark != -1) {
         // this code can be triggered only by 3rd party actions
         beginOwnAction();

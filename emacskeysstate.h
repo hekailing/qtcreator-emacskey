@@ -25,44 +25,59 @@
 #pragma once
 
 #include <QObject>
+#include <QString>
 
 QT_FORWARD_DECLARE_CLASS(QPlainTextEdit)
 
 namespace EmacsKeys {
 namespace Internal {
 
-enum EmacsKeysAction {
-    KeysAction3rdParty,
-    KeysActionKillWord,
-    KeysActionKillLine,
-    KeysActionOther,
-};
+    enum EmacsKeysAction
+    {
+        KeysAction3rdParty,
+        KeysActionKillWord,
+        KeysActionKillPrevWord,
+        KeysActionKillLine,
+        KeysActionOther,
+    };
 
-class EmacsKeysState : public QObject
-{
-public:
-    EmacsKeysState(QPlainTextEdit *edit);
-    ~EmacsKeysState() override;
-    void setLastAction(EmacsKeysAction action);
-    void beginOwnAction() { m_ignore3rdParty = true; }
-    void endOwnAction(EmacsKeysAction action) {
-        m_ignore3rdParty = false;
-        m_lastAction = action;
-    }
-    EmacsKeysAction lastAction() const { return m_lastAction; }
+    enum EmacsKeysKillBufPush {
+        EmacsKeysPushFront,
+        EmacsKeysPushBack,
+    };
 
-    int mark() const { return m_mark; }
-    void setMark(int mark) { m_mark = mark; }
+    class EmacsKeysState : public QObject
+    {
+    public:
+        EmacsKeysState(QPlainTextEdit *edit);
+        ~EmacsKeysState() override;
+        void setLastAction(EmacsKeysAction action);
+        void beginOwnAction() { m_ignore3rdParty = true; }
+        void endOwnAction(EmacsKeysAction action)
+        {
+            m_ignore3rdParty = false;
+            m_lastAction = action;
+        }
+        EmacsKeysAction lastAction() const { return m_lastAction; }
 
-private:
-    void cursorPositionChanged();
-    void textChanged();
-    void selectionChanged();
+        int mark() const { return m_mark; }
+        void setMark(int mark) { m_mark = mark; }
+        void updateKillBuf(const QString &killText, EmacsKeysKillBufPush pushPos = EmacsKeysPushBack);
+        const QString& getKillBuf() { return m_killBuf; }
 
-    bool m_ignore3rdParty;
-    int m_mark;
-    EmacsKeysAction m_lastAction;
-    QPlainTextEdit *m_editorWidget;
+    private:
+        void cursorPositionChanged();
+        void textChanged();
+        void selectionChanged();
+        bool isKillAction(EmacsKeysAction action);
+        bool isKillAction();
+        void clearKillBuf();
+
+        bool m_ignore3rdParty;
+        int m_mark;
+        QString m_killBuf;
+        EmacsKeysAction m_lastAction;
+        QPlainTextEdit *m_editorWidget;
 };
 
 } // namespace Internal
