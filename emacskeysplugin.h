@@ -27,6 +27,8 @@
 #include <extensionsystem/iplugin.h>
 
 #include <QTextCursor>
+#include <QList>
+#include <utils/fileutils.h>
 
 // forward declarations
 QT_FORWARD_DECLARE_CLASS(QAction)
@@ -38,12 +40,24 @@ class IEditor;
 }
 namespace TextEditor {
 class TextEditorWidget;
+class TextDocument;
 }
 
 namespace EmacsKeys {
 namespace Internal {
 
 class EmacsKeysState;
+
+class EmacsJumpPosition {
+public:
+    EmacsJumpPosition(const Utils::FilePath filePath, const QTextCursor cursor)
+        : m_filePath(filePath), m_cursor(cursor) {}
+    const Utils::FilePath& filePath() { return m_filePath; };
+    const QTextCursor& textCursor() { return m_cursor; };
+private:
+    const Utils::FilePath m_filePath;
+    const QTextCursor m_cursor;
+};
 
 class EmacsKeysPlugin : public ExtensionSystem::IPlugin
 {
@@ -88,6 +102,9 @@ private:
     void scrollHalfDown();        // C-v
     void scrollHalfUp();          // M-v
 
+    void gotoDefinition();        // M-.
+    void goBack();                // M-,
+
     QAction *registerAction(Core::Id id, void (EmacsKeysPlugin::*callback)(),
                             const QString &title);
     void genericGoto(QTextCursor::MoveOperation op, bool abortAssist = true);
@@ -97,6 +114,7 @@ private:
     QPlainTextEdit *m_currentEditorWidget = nullptr;
     EmacsKeysState *m_currentState = nullptr;
     TextEditor::TextEditorWidget *m_currentBaseTextEditorWidget = nullptr;
+    QList<EmacsJumpPosition> m_cursorPath;
 };
 
 } // namespace Internal

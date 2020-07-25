@@ -123,6 +123,12 @@ bool EmacsKeysPlugin::initialize(const QStringList &arguments, QString *errorStr
         &EmacsKeysPlugin::scrollHalfDown, tr("Scroll Half Screen Down"));
     registerAction(Constants::SCROLL_HALF_UP,
         &EmacsKeysPlugin::scrollHalfUp, tr("Scroll Half Screen Up"));
+
+    registerAction(Constants::GOTO_DEFINITION,
+                   &EmacsKeysPlugin::gotoDefinition, tr("Goto Definition"));
+    registerAction(Constants::GOBACK,
+                   &EmacsKeysPlugin::goBack, tr("Go Back"));
+
     return true;
 }
 
@@ -383,6 +389,32 @@ void EmacsKeysPlugin::genericVScroll(int direction)
     }
     m_currentEditorWidget->setTextCursor(cursor);
     m_currentState->endOwnAction(KeysActionOther);
+}
+
+void EmacsKeysPlugin::gotoDefinition() {
+    QTextCursor lastCursor = m_currentBaseTextEditorWidget->textCursor();
+    Utils::FilePath lastFilePath = m_currentBaseTextEditorWidget->textDocument()->filePath();
+    m_currentBaseTextEditorWidget->openLinkUnderCursor();
+    QTextCursor cursor = m_currentBaseTextEditorWidget->textCursor();
+    if (lastCursor != cursor && (m_cursorPath.empty() || m_cursorPath.back().textCursor() != cursor)) {
+        m_cursorPath.push_back({lastFilePath, lastCursor});
+    }
+    qInfo() << m_cursorPath.size();
+}
+
+void EmacsKeysPlugin::goBack() {
+    if (!m_cursorPath.empty()) {
+        EmacsJumpPosition pos = m_cursorPath.back();
+        qInfo() << "back: " << pos.filePath().toString();
+        m_cursorPath.pop_back();
+        QString filePath = pos.filePath().toString();
+        EditorManager::openEditorAt(filePath, -1, -1, Core::Id(), EditorManager::OpenEditorFlag::NoFlags);
+        //m_currentBaseTextEditorWidget->textDocument()->open(NULL, fileName, filePath);
+        QTextCursor cursor = m_currentBaseTextEditorWidget->textCursor();
+        cursor.setPosition(pos.textCursor().position());
+        m_currentBaseTextEditorWidget->setTextCursor(cursor);
+        //m_currentBaseTextEditorWidget->setTextCursor(pos.textCursor());
+    }
 }
 
 } // namespace Internal

@@ -53,5 +53,8 @@ const char YANK[]                     = "EmacsKeys.Yank";
 const char SCROLL_HALF_DOWN[]         = "EmacsKeys.ScrollHalfDown";
 const char SCROLL_HALF_UP[]           = "EmacsKeys.ScrollHalfUp";
 
+const char GOTO_DEFINITION[]          = "EmacsKeys.GotoDefinition";
+const char GOBACK[]                   = "EmacsKeys.GoBack";
+
 } // namespace EmacsKeys
 } // namespace Constants
