@@ -50,13 +50,18 @@ class EmacsKeysState;
 
 class EmacsJumpPosition {
 public:
-    EmacsJumpPosition(const Utils::FilePath filePath, const QTextCursor cursor)
+    EmacsJumpPosition(const QString& filePath, const QTextCursor cursor)
         : m_filePath(filePath), m_cursor(cursor) {}
-    const Utils::FilePath& filePath() { return m_filePath; };
+    EmacsJumpPosition &operator=(const EmacsJumpPosition &pos) {
+        m_filePath = pos.m_filePath;
+        m_cursor = pos.m_cursor;
+        return *this;
+    }
+    const QString& filePath() { return m_filePath; };
     const QTextCursor& textCursor() { return m_cursor; };
 private:
-    const Utils::FilePath m_filePath;
-    const QTextCursor m_cursor;
+    QString m_filePath;
+    QTextCursor m_cursor;
 };
 
 class EmacsKeysPlugin : public ExtensionSystem::IPlugin

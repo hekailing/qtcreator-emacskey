@@ -429,11 +429,11 @@ void EmacsKeysPlugin::genericVScroll(int direction)
 
 void EmacsKeysPlugin::gotoDefinition() {
     QTextCursor lastCursor = m_currentBaseTextEditorWidget->textCursor();
-    Utils::FilePath lastFilePath = m_currentBaseTextEditorWidget->textDocument()->filePath();
+    QString lastFilePath = m_currentBaseTextEditorWidget->textDocument()->filePath().toString();
     m_currentBaseTextEditorWidget->openLinkUnderCursor();
     QTextCursor cursor = m_currentBaseTextEditorWidget->textCursor();
     if (lastCursor != cursor && (m_cursorPath.empty() || m_cursorPath.back().textCursor() != cursor)) {
-        m_cursorPath.push_back({lastFilePath, lastCursor});
+        m_cursorPath.push_back(EmacsJumpPosition(lastFilePath, lastCursor));
     }
     qInfo() << m_cursorPath.size();
 }
@@ -441,15 +441,12 @@ void EmacsKeysPlugin::gotoDefinition() {
 void EmacsKeysPlugin::goBack() {
     if (!m_cursorPath.empty()) {
         EmacsJumpPosition pos = m_cursorPath.back();
-        qInfo() << "back: " << pos.filePath().toString();
         m_cursorPath.pop_back();
-        QString filePath = pos.filePath().toString();
+        QString filePath = pos.filePath();
         EditorManager::openEditorAt(filePath, -1, -1, Id(), EditorManager::OpenEditorFlag::NoFlags);
-        //m_currentBaseTextEditorWidget->textDocument()->open(NULL, fileName, filePath);
         QTextCursor cursor = m_currentBaseTextEditorWidget->textCursor();
         cursor.setPosition(pos.textCursor().position());
         m_currentBaseTextEditorWidget->setTextCursor(cursor);
-        //m_currentBaseTextEditorWidget->setTextCursor(pos.textCursor());
     }
 }
 
