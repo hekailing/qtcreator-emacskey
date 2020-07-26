@@ -29,13 +29,13 @@
 #include <QTextCursor>
 #include <QList>
 #include <utils/fileutils.h>
+#include <utils/id.h>
 
 // forward declarations
 QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QPlainTextEdit)
 
 namespace Core {
-class Id;
 class IEditor;
 }
 namespace TextEditor {
@@ -92,6 +92,8 @@ private:
     void gotoPreviousCharacter(); // C-b
     void gotoNextWord();          // M-f
     void gotoPreviousWord();      // M-b
+    void gotoNextMatchWord();     // M-n
+    void gotoPreviousMatchWord(); // M-p
 
     void mark();                  // C-SPC
     void exchangeCursorAndMark(); // C-x C-x
@@ -105,7 +107,7 @@ private:
     void gotoDefinition();        // M-.
     void goBack();                // M-,
 
-    QAction *registerAction(Core::Id id, void (EmacsKeysPlugin::*callback)(),
+    QAction *registerAction(Utils::Id id, void (EmacsKeysPlugin::*callback)(),
                             const QString &title);
     void genericGoto(QTextCursor::MoveOperation op, bool abortAssist = true);
     void genericVScroll(int direction);

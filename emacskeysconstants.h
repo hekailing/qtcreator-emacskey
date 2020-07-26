@@ -43,6 +43,8 @@ const char GOTO_NEXT_CHARACTER[]      = "EmacsKeys.GotoNextCharacter";
 const char GOTO_PREVIOUS_CHARACTER[]  = "EmacsKeys.GotoPreviousCharacter";
 const char GOTO_NEXT_WORD[]           = "EmacsKeys.GotoNextWord";
 const char GOTO_PREVIOUS_WORD[]       = "EmacsKeys.GotoPreviousWord";
+const char GOTO_NEXT_MATCH_WORD[]     = "EmacsKeys.GotoNextMatchWord";
+const char GOTO_PREVIOUS_MATCH_WORD[] = "EmacsKeys.GotoPreviousMatchWord";
 
 const char MARK[]                     = "EmacsKeys.Mark";
 const char EXCHANGE_CURSOR_AND_MARK[] = "EmacsKeys.ExchangeCursorAndMark";

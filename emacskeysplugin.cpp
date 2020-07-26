@@ -48,6 +48,15 @@ extern void qt_set_sequence_auto_mnemonic(bool enable);
 QT_END_NAMESPACE
 
 using namespace Core;
+using namespace Utils;
+
+namespace {
+QString plainSelectedText(const QTextCursor &cursor)
+{
+    // selectedText() returns U+2029 (PARAGRAPH SEPARATOR) instead of newline
+    return cursor.selectedText().replace(QChar::ParagraphSeparator, QLatin1Char('\n'));
+}
+}
 
 namespace EmacsKeys {
 namespace Internal {
@@ -107,6 +116,10 @@ bool EmacsKeysPlugin::initialize(const QStringList &arguments, QString *errorStr
         &EmacsKeysPlugin::gotoNextWord, tr("Go to Next Word"));
     registerAction(Constants::GOTO_PREVIOUS_WORD,
         &EmacsKeysPlugin::gotoPreviousWord, tr("Go to Previous Word"));
+    registerAction(Constants::GOTO_NEXT_MATCH_WORD,
+        &EmacsKeysPlugin::gotoNextMatchWord, tr("Go to Next Match Word"));
+    registerAction(Constants::GOTO_PREVIOUS_MATCH_WORD,
+        &EmacsKeysPlugin::gotoPreviousMatchWord, tr("Go to Previous Match Word"));
 
     registerAction(Constants::MARK,
         &EmacsKeysPlugin::mark, tr("Mark"));
@@ -182,6 +195,29 @@ void EmacsKeysPlugin::gotoPreviousCharacter() { genericGoto(QTextCursor::Left); 
 void EmacsKeysPlugin::gotoNextWord()          { genericGoto(QTextCursor::NextWord); }
 void EmacsKeysPlugin::gotoPreviousWord()      { genericGoto(QTextCursor::PreviousWord); }
 
+void EmacsKeysPlugin::gotoNextMatchWord() {
+    QTextCursor cursor = m_currentEditorWidget->textCursor();
+    cursor.select(QTextCursor::SelectionType::WordUnderCursor);
+    QString selectedText = plainSelectedText(cursor);
+    if (!selectedText.isEmpty()) {
+        m_currentEditorWidget->find(selectedText,
+                                    QTextDocument::FindFlag::FindWholeWords \
+                                    | QTextDocument::FindFlag::FindCaseSensitively);
+    }
+}
+
+void EmacsKeysPlugin::gotoPreviousMatchWord() {
+    QTextCursor cursor = m_currentEditorWidget->textCursor();
+    cursor.select(QTextCursor::SelectionType::WordUnderCursor);
+    QString selectedText = plainSelectedText(cursor);
+    if (!selectedText.isEmpty()) {
+        m_currentEditorWidget->find(selectedText,
+                                    QTextDocument::FindFlag::FindWholeWords \
+                                    | QTextDocument::FindFlag::FindCaseSensitively \
+                                    | QTextDocument::FindFlag::FindBackward);
+    }
+}
+
 void EmacsKeysPlugin::mark()
 {
     if (!m_currentEditorWidget)
@@ -224,7 +260,7 @@ void EmacsKeysPlugin::copy()
 
     m_currentState->beginOwnAction();
     QTextCursor cursor = m_currentEditorWidget->textCursor();
-    QApplication::clipboard()->setText(cursor.selectedText());
+    QApplication::clipboard()->setText(plainSelectedText(cursor));
     cursor.clearSelection();
     m_currentEditorWidget->setTextCursor(cursor);
     m_currentState->setMark(-1);
@@ -238,7 +274,7 @@ void EmacsKeysPlugin::cut()
 
     m_currentState->beginOwnAction();
     QTextCursor cursor = m_currentEditorWidget->textCursor();
-    QApplication::clipboard()->setText(cursor.selectedText());
+    QApplication::clipboard()->setText(plainSelectedText(cursor));
     cursor.removeSelectedText();
     m_currentState->setMark(-1);
     m_currentState->endOwnAction(KeysActionOther);
@@ -277,7 +313,7 @@ void EmacsKeysPlugin::killWord()
     if (!m_currentState->isKillAction()) {
         m_currentState->clearKillBuf();
     }
-    m_currentState->updateKillBuf(cursor.selectedText());
+    m_currentState->updateKillBuf(plainSelectedText(cursor));
     cursor.removeSelectedText();
     m_currentState->endOwnAction(KeysActionKillWord);
 }
@@ -292,7 +328,7 @@ void EmacsKeysPlugin::killPrevWord()
     if (!m_currentState->isKillAction()) {
         m_currentState->clearKillBuf();
     }
-    m_currentState->updateKillBuf(cursor.selectedText(), EmacsKeysPushFront);
+    m_currentState->updateKillBuf(plainSelectedText(cursor), EmacsKeysPushFront);
     cursor.removeSelectedText();
     m_currentState->endOwnAction(KeysActionKillWord);
 }
@@ -313,7 +349,7 @@ void EmacsKeysPlugin::killLine()
     if (!m_currentState->isKillAction()) {
         m_currentState->clearKillBuf();
     }
-    m_currentState->updateKillBuf(cursor.selectedText());
+    m_currentState->updateKillBuf(plainSelectedText(cursor));
     cursor.removeSelectedText();
     m_currentState->endOwnAction(KeysActionKillLine);
 }
@@ -408,7 +444,7 @@ void EmacsKeysPlugin::goBack() {
         qInfo() << "back: " << pos.filePath().toString();
         m_cursorPath.pop_back();
         QString filePath = pos.filePath().toString();
-        EditorManager::openEditorAt(filePath, -1, -1, Core::Id(), EditorManager::OpenEditorFlag::NoFlags);
+        EditorManager::openEditorAt(filePath, -1, -1, Id(), EditorManager::OpenEditorFlag::NoFlags);
         //m_currentBaseTextEditorWidget->textDocument()->open(NULL, fileName, filePath);
         QTextCursor cursor = m_currentBaseTextEditorWidget->textCursor();
         cursor.setPosition(pos.textCursor().position());
